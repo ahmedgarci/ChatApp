@@ -1,13 +1,26 @@
-import { useState } from "react";
-
+import { useEffect, useState } from "react";
+import WebsocketService from "../Functions/WebsocketService";
+import { Message } from "@stomp/stompjs";
       
       const AuthPage: React.FC = () => {
-        const [username, setUsername] = useState<string>("");
+
+        const [message, setMessages] = useState<string>("");
+        useEffect(() => {
+          const onMessageReceived = (message: Message) => {
+            const body = message.body;
+            setMessages(body);
+          };
       
+          WebsocketService.connect(onMessageReceived);
+      
+          return () => {
+            WebsocketService.disconnect();
+          };
+        }, []);
+
+
         const handleLogin = () => {
-          if (username.trim()) {
             console.log("c");
-          }
         };
       
         return (
@@ -18,8 +31,8 @@ import { useState } from "react";
             <input
               type="text"
               placeholder="Enter your username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={message}
+              onChange={(e) => setMessages(e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
             />
             <button
